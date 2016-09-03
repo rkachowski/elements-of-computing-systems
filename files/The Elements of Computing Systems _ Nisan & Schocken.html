@@ -1,0 +1,317 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0039)http://www.nand2tetris.org/software.php -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+	<title>The Elements of Computing Systems / Nisan &amp; Schocken</title>
+		<link rel="stylesheet" type="text/css" href="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/style.css">
+	<style>[href^="http://www.amazon.co.uk/exec/obidos/external-search?"]
+{display:none !important;}</style></head>
+	<body data-pinterest-extension-installed="cr1.39.2" data-feedly-mini="yes">
+		<div class="box">
+					
+				<a name="top"></a>
+				<div class="topbar">
+<img class="banner" src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/banner.png" height="100px" alt="Banner">
+<span class="titletext">From NAND to Tetris</span>
+<span class="subtitletext">Building a Modern Computer From First
+Principles</span>
+</div>
+				<div class="sidemenu">
+					<a href="http://www.nand2tetris.org/" class="menu">Home</a><a href="http://www.nand2tetris.org/prerequisites.php" class="menu">Prerequisites</a><a href="http://www.nand2tetris.org/syllabus.php" class="menu">Syllabus</a><a href="http://www.nand2tetris.org/course.php" class="menu">Course</a><a href="http://www.nand2tetris.org/book.php" class="menu">Book</a><a href="http://www.nand2tetris.org/software.php" class="menu_selected">Software</a><a href="http://www.nand2tetris.org/terms.php" class="menu">Terms</a><a href="http://www.nand2tetris.org/papers.php" class="menu">Papers</a><a href="http://www.nand2tetris.org/media.php" class="menu">Talks</a><a href="http://www.nand2tetris.org/coolstuff.php" class="menu">Cool Stuff</a><a href="http://www.nand2tetris.org/about.php" class="menu">About</a><a href="http://www.nand2tetris.org/team.php" class="menu">Team</a><a href="http://questions-and-answers-forum.32033.n3.nabble.com/" target="_blank" "="" class="menu">Q&amp;A</a>				</div>
+			<div class="content">
+			<h1>Software</h1>
+<p class="project_text">
+</p><p>The <i>Nand2Tetris Software Suite</i> contains all the tools and files necessary to complete all the projects described in this site and in the book. Once you download the nand2tetris software suite to your PC, there is no need to download anything else throughout the course.</p>
+
+<p>The software runs as is on Windows, Unix, and Mac OS.</p>
+
+<p>The software can be used freely and is protected by the <a href="http://www.gnu.org/copyleft/gpl.html">GNU GPL (General Public License)</a>.
+
+</p><p>The software is open source. You If you wish to inspect/modify/extend the source code, see the bottom of this page.
+</p>
+
+<span class="project_desc">Download</span>
+<p class="project_text">
+</p><p><b>(Note:</b> we have recently updated the software suite; since the download file is new, some browsers may warn that "this file is not frequently downloaded and can be dangerous", or something like this. Please ignore this warning, and proceed to download and extract the zip file to your computer.)
+
+</p><p><a href="http://www.nand2tetris.org/software/nand2tetris.zip">Download the Nand2tetris Software Suite</a> Version 2.5 (about 790K).
+</p>
+
+<p><b><u>Mac users:</u></b> after downloading, read this <a href="http://www.nand2tetris.org/software/mac_guide.html">Setup Guide for Mac OS X</a>, written by Yong Bakos.
+</p>
+
+<p><b><u>Windows users:</u></b> after downloading, put the downloaded zip file in an empty directory on your computer and extract its contents <i>as is</i>, without changing the directories structure and names. In order to use our software tools, your computer must be equipped with a <i>Java Run-time Environment</i>. The JRE can be downloaded freely from many sites including <a href="http://java.com/en/download/index.jsp">this one</a>. For best performance, download the latest available version.</p>
+
+
+<p><b>Problems?</b> Describe your problem in our <a href="http://tecs-questions-and-answers-forum.32033.n3.nabble.com/">Q&amp;A Forum</a> and you will get help soon.
+</p>
+
+
+<p>
+<span class="project_desc">About the Software</span>
+</p><p class="project_text">
+
+The <i>Nand2tetris Software Suite</i> consists of two directories named <span class="code">projects</span> and <span class="code">tools</span>. 
+
+</p><p>
+The <span class="code">projects</span> directory is divided into 14 project directories named 00,&nbsp;01,&nbsp;...,&nbsp;13 (of which project 00 is a warm-up and project 13 is open-ended). These directories contain files that you have to modify and complete, as explained throughout the course.
+
+</p><p>
+The <span class="code">tools</span> directory contains the nand2tetris software tools. There is no need to inspect or touch any of these files. Rather, you have to use them as the course progresses, following our guidelines. The remainder of this section describes the contents of the <span class="code">tools</span> directory. Once again, there is no need to touch these files, so this description is optional.
+
+</p><p><b>The .bat and .sh files</b> are batch and script files that are used to invoke the nand2tetris software tools. These files are explained in detail below.
+
+</p><p><b>The bin directory</b> contains the code of the nand2tetris software tools. It consists of several subdirectories containing Java class files and supporting files.
+
+</p><p><b>The builtInChips and the builtInVMCode directories</b> contain files that are used by the supplied Hardware Simulator and VM Emulator, respectively.
+
+</p><p><b>The OS directory</b> contains a compiled version of the Jack operating system.
+
+</p><p>
+<span class="project_desc">Software Tools</span>
+</p><p class="project_text">
+The <i>Nand2tetris Software Suite</i> features the following software tools:
+</p>
+
+<table cellpadding="6">
+
+<tbody><tr class="even">
+    <th class="topleft"><b>Tool</b></th>
+    <td><b>Description</b></td>
+	<td><b>Screen Shots</b></td>
+</tr>
+
+
+<tr class="even">
+    <th class="topleft">Hardware Simulator</th>
+    <td>Simulates and tests logic gates and chips implemented in the HDL (Hardware Description Language) described in the book. Used in hardware construction projects.<p>Hardware Simulator Tutorial: <a href="http://www.nand2tetris.org/tutorials/PPT/Hardware%20Simulator%20Tutorial.ppt"><img align="ABSMIDDLE" src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/powerpoint.gif" alt="PowerPoint Format" width="16" height="16"></a> <a href="http://www.nand2tetris.org/tutorials/PDF/Hardware%20Simulator%20Tutorial.pdf"><img align="ABSMIDDLE" src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/acrobat.gif" alt="Portable Document Format" width="16" height="16" data-pin-nopin="true"></a></p></td>
+
+	<td align="CENTER" class="topright">
+		<table width="100%" style="text-align:center"><tbody><tr>
+		<td width="33%"><a href="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/HW simulator Xor.gif"><img src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/HW simulator Xor.gif" class="screenshot" width="99" height="72"></a></td>
+		<td width="34%"><a href="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/HW simulator test script.gif"><img src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/HW simulator test script.gif" class="screenshot" width="100" height="72"></a></td>
+		<td width="33%"><a href="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/HW simulator Computer chip.gif"><img src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/HW simulator Computer chip.gif" class="screenshot" width="100" height="72"></a></td>
+	</tr><tr>
+		<td>Simulating a Xor gate</td>
+		<td>Running a test script</td>
+		<td>Simulating the topmost Computer chip</td>
+	</tr></tbody></table></td>
+</tr>
+<tr class="odd">
+    <th>CPU Emulator</th>
+    <td>Emulates the operation of the Hack computer system. Used to test and run programs written in the Hack machine language (in both its binary and assembly versions).<p>CPU Emulator Tutorial: <a href="http://www.nand2tetris.org/tutorials/PPT/CPU%20Emulator%20Tutorial.ppt"><img align="ABSMIDDLE" src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/powerpoint.gif" alt="PowerPoint Format" width="16" height="16"></a> <a href="http://www.nand2tetris.org/tutorials/PDF/CPU%20Emulator%20Tutorial.pdf"><img align="ABSMIDDLE" src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/acrobat.gif" alt="Portable Document Format" width="16" height="16"></a></p></td>
+	<td align="CENTER">
+		<table width="100%" style="text-align:center"><tbody><tr>
+		<td><a href="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/CPU Emulator.gif"><img src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/CPU Emulator.gif" class="screenshot" width="100" height="72"></a></td>
+	</tr><tr>
+		<td>Running a machine language program that draws a rectangle on the computer screen</td>
+	</tr></tbody></table></td>
+</tr>
+<tr class="even">
+    <th>VM Emulator</th>
+    <td>Emulates the operation of the virtual machine described in the book. Used to run and test programs written in the VM language used in the Hack-Jack platform.<p>VM Emulator Tutorial: <a href="http://www.nand2tetris.org/tutorials/PPT/VM%20Emulator%20Tutorial.ppt"><img align="ABSMIDDLE" src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/powerpoint.gif" alt="PowerPoint Format" width="16" height="16"></a> <a href="http://www.nand2tetris.org/tutorials/PDF/VM%20Emulator%20Tutorial.pdf"><img align="ABSMIDDLE" src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/acrobat.gif" alt="Portable Document Format" width="16" height="16"></a></p></td>
+	<td align="CENTER">
+		<table width="100%" style="text-align:center"><tbody><tr>
+		<td><a href="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/VM Emulator.gif"><img src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/VM Emulator.gif" class="screenshot" width="100" height="72"></a></td>
+	</tr><tr>
+		<td>Running a VM program</td>
+
+	</tr></tbody></table></td>
+</tr>
+
+<tr class="odd">
+    <th>Assembler</th>
+    <td>Translates programs from the Hack assembly language to Hack binary code. The resulting code can be executed directly on the <i>Computer chip</i> (in the hardware simulator), or emulated on the supplied <i>CPU Emulator</i> (much faster).<p>Assembler Tutorial: <a href="http://www.nand2tetris.org/tutorials/PPT/Assembler%20Tutorial.ppt"><img align="ABSMIDDLE" src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/powerpoint.gif" alt="PowerPoint Format" width="16" height="16"></a> <a href="http://www.nand2tetris.org/tutorials/PDF/Assembler%20Tutorial.pdf"><img align="ABSMIDDLE" src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/acrobat.gif" alt="Portable Document Format" width="16" height="16"></a></p></td>
+
+
+<td align="CENTER" class="topright">
+		<table width="100%" style="text-align:center"><tbody><tr>
+		<td width="33%"><a href="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/Assembler translating.gif"><img src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/Assembler translating.gif" class="screenshot" width="99" height="72"></a></td>
+		<td width="34%"><a href="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/Assembler comparing.gif"><img src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/Assembler comparing.gif" class="screenshot" width="100" height="72"></a></td>
+	</tr><tr>
+		<td>Translating</td>
+		<td>Using a compare file</td>
+	</tr></tbody></table></td>
+
+</tr>
+
+<tr class="even">
+
+    <th>Compiler</th>
+    <td>Translates programs from the Jack programming language into VM code. The resulting code can run on the supplied <i>VM Emulator</i>. Alternatively, the VM code can be translated further by the supplied <i>VM translator</i> and <i>Assembler</i> into Hack binary code that can then be executed on the supplied <i>CPU Emulator</i> or <i>Hardware Simulator</i>.</td>
+		<td align="CENTER">(A GUI-less, command-level program)<br></td>
+
+</tr><tr class="odd">
+    <th>Operating system</th>
+    <td>The Jack OS extends the Jack language, just like the Java standard class library extends Java. We supply two Jack OS implementations: (i) a collection of eight <span class="code">.vm</span> class files, written originally in Jack (just like Unix is written in C). (ii) a much faster implementation, embedded in the supplied <i>VM Emulator</i>.</td>
+	<td align="CENTER">
+		(GUI-less) 
+		<table width="100%" style="text-align:center"><tbody><tr>
+        </tr></tbody></table></td>
+</tr>
+<tr class="even">
+    <th class="bottomleft">Text Comparer</th>
+
+    <td>This utility checks if two input text files are identical. Used in various projects. In Unix use "diff" instead.</td>
+	<td align="CENTER">(A GUI-less, command-level program)<br></td>
+</tr>
+</tbody></table>
+
+<br>
+
+
+
+<p>
+<span class="project_desc">Running the Software Tools</span>
+</p><p class="project_text">
+
+The supplied software tools are designed to be run from your computer's <em>command-line environment</em> (also known as "terminal", or "shell"). Command-line environments vary from one operating system to another, and working in them requires knowledge of various OS shell commands.
+
+</p><p>
+In order to eliminate this overhead, we supply batch files (for Windows) and scripts (for Unix and Mac OS), developed by Mark Armbrust. These batch and script files enable invoking the supplied nand2tetris tools from the command line on your computer, painlessly. They can be used from any working directory on your computer, without requiring full paths to the files on which they operate. Further, they accept spaces in directory and file names, so they will work if nand2tetris is installed under a directory named, say, "My Documents".
+
+</p><p>
+The batch files have been tested on Windows XP and Windows 7 32- and 64-bit. The scripts have been tested on Ubuntu Linux and Mac OS X.
+
+</p><p>
+<b><u>Mac and Linux users:</u></b> 
+
+</p><p>
+Before running the scripts you must first change their file attributes to include "executable". You can then run the scripts by typing their name, as well as the .sh extension, in the terminal environment.
+
+</p><p>
+If you want to avoid typing the 'sh' extensions, you can create (once and for all) <em>symbolic</em> links in your <tt>~/bin</tt> directory. Here is an example how to do it for, say, the HardwareSimulator tool:
+</p><pre>ln -s ~/nand2tetris/tools/HardwareSimulator.sh HardwareSimulator
+chmod +x HardwareSimulator
+</pre>
+
+<b><u>Windows users:</u></b> 
+
+<p>
+For the batch files to work from the command line, you must add (once and for all) the <tt>nand2tetris/tools</tt> directory to your PATH variable.  
+
+</p><p>
+To run a batch file from command-line, type its name, without the .bat extension.  
+
+</p><p>
+If you use Windows 7 64-bit you need to install the 64-bit version of Java so that 64-bit cmd.exe can run Java commands in batch files. If the 
+batch files say " 'java' is not recognized..." you likely only have the 32-bit Java installed.
+
+</p><p>
+You can create desktop icons and use them to invoke the interactive versions of the following supplied tools: HardwareSimulator, Assembler, CPUEmulator and VMEmulator. This can be done by finding the disk locations of the respective batch files, right-clicking on them and picking 
+"Send&nbsp;to&nbsp;&gt;&nbsp;Desktop."  Edit the shortcuts' properties and set "Run" to "minimized."
+
+</p><p>
+</p><h3>Usage</h3>
+
+
+<p>
+<b>Hardware Simulator:</b>
+To invoke the interactive version of the Hardware Simulator, type "HardwareSimulator" in the command line:
+
+</p><pre>C:\...\projects\02&gt;<u>HardwareSimulator</u>
+(a window will open up, running the interactive version of the Hardware Simulator)
+</pre>
+
+<p>
+Typing "HardwareSimulator xxx.tst" will run the given test script in the simulator and report the result (but note that test scripts can also be loaded into the simulator in interactive mode).
+</p><p>
+&#8195;Successful test:
+</p><pre>C:\...\projects\02&gt;<u>HardwareSimulator ALU.tst</u>
+End of script - Comparison ended successfully
+</pre>
+&#8195;Failed test:
+<pre>C:\...\projects\02&gt;<u>HardwareSimulator ALU.tst</u>
+Comparison failure at line 24
+</pre>
+&#8195;Error in the associated HDL file:
+<pre>C:\...\projects\02&gt;<u>HardwareSimulator ALU.tst</u>
+In HDL file C:\...\projects\02\ALU.hdl, Line 60, out[16]: the specified sub bus is not in the bus range: load ALU.hdl
+</pre>
+
+<p>
+<b>CPU Emulator and VM Emulator:</b>
+These tools work similarly, by either opening the tool in interactive mode if there is no parameter, or running a test script.
+
+</p><p>
+<b>Assembler:</b>
+Typing "Assembler" will start the supplied assembler in interactive mode.  Typing "Assembler xxx.asm" will assemble the given xxx.asm file and generate a file named xxx.hack, containing the translated binary code (but note that these operations can also be done in the interactive version). 
+
+</p><p>
+&#8195;Successful assembly:
+</p><pre>C:\...\projects\04\fill&gt;<u>Assembler Fill.asm</u>
+Assembling "c:\...\projects\04\fill\Fill.asm"
+</pre>
+&#8195;Failed assembly: 
+<pre>C:\...\projects\04\fill&gt;<u>Assembler Fill.asm</u>
+Assembling "C:\...\projects\04\fill\Fill.asm"
+In line 15, Expression expected
+</pre>
+
+<p>
+There is no way to automatically compare the resulting code to expected output. Such comparisons can be done though using the supplied TextComparer tool, described below.
+
+</p><p>
+<b>Compiler:</b>
+Typing "JackCompiler" with no arguments will cause the Jack compiler to compile all the files in the current directory. With an argument, it will compile a single Jack file or all the files in the named directory. Wildcards are not supported. Here are some examples:
+</p><p>
+&#8195;Compile the current directory:
+</p><pre>C:\...\projects\09\Reflect&gt;<u>JackCompiler</u>
+Compiling "c:\...\projects\09\Reflect"
+</pre>
+&#8195;Compile a single file:
+<pre>C:\...\projects\09\Reflect&gt;<u>JackCompiler Mirrors.jack</u>
+Compiling "C:\...\projects\09\Reflect\Mirrors.jack"
+</pre>
+&#8195;Compile the "Reflect" directory (for example):
+<pre>C:\...\projects\09&gt;<u>JackCompiler Reflect</u>
+Compiling "C:\...\projects\09\Reflect"
+</pre>
+
+<p>
+<b>TextComparer:</b>
+The supplied TextComparer tool compares two given files and reports success or failure. For example, suppose you run the hardware simulator with some test script and get some comparison failure. Next, you can use the TextComparer to investigate the problem:
+</p><p>
+</p><pre>C:\...\projects\02&gt;<u>HardwareSimulator ALU.tst</u>
+Comparison failure at line 24
+
+C:\...\projects\02&gt;<u>TextComparer ALU.cmp ALU.out</u>
+Comparison failure in line 23:
+|0101101110100000|0001111011010010|1|1|0|0|0|0|0001111011010010|0|0|
+|0101101110100000|0001111011010010|1|1|0|0|0|0|0001111011010010|0|1|
+</pre>
+(Note the line number discrepancy between the reports of the two tools).
+
+<p>
+<b>Help:</b>
+In Windows, each batch file accepts a "/?" option that shows its intended usage. In Mac and Unix, use "-h". For example:
+</p><pre>C:\...\projects\09&gt;<u>JackCompiler /?</u>
+Usage:
+    JackCompiler              Compiles all .jack files in the current
+                              working directory.
+    JackCompiler DIRECTORY    Compiles all .jack files in DIRECTORY.
+    JackCompiler FILE.jack    Compiles FILE.jack to FILE.vm.</pre>
+
+<p>
+<span class="project_desc">Source Code</span>
+</p><p class="project_text">
+
+All the nand2tetris software tools are written in Java. If you wish to inspect, modify, or extend some tool, you can <a href="http://www.nand2tetris.org/software/nand2tetris-open-source-2.5.7.zip">download the source code</a> Version 2.5.
+
+Before compiling the source code on your computer, read <a href="http://www.nand2tetris.org/software/Readme.txt">Readme.txt</a>.
+
+</p><p>For details on what's new in the current version of the software (somewhat technical but useful for porting old modifications to the current version), read this <a href="http://www.nand2tetris.org/software/ChangeLog.txt">ChangeLog.txt</a> file.</p>
+
+<p>If you wish to share your software extensions with others, please email us at <span class="code">nand2tetris@gmail.com</span>.</p>
+<p></p>
+
+			</div>
+		</div>
+		<div class="small">
+			Best viewed with 
+							<img src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/compatible_firefox.gif">
+							<img src="./The Elements of Computing Systems _ Nisan &amp; Schocken_files/compatible_chrome.gif"><br>
+			Designed and built by Tali Gutman ©
+		</div>
+	
+	
+<span style="border-radius: 2px; text-indent: 20px; width: auto; padding: 0px 4px 0px 0px; text-align: center; font-style: normal; font-variant: normal; font-weight: bold; font-stretch: normal; font-size: 11px; line-height: 20px; font-family: &quot;Helvetica Neue&quot;, Helvetica, sans-serif; color: rgb(255, 255, 255); position: absolute; opacity: 1; z-index: 8675309; display: none; cursor: pointer; border: none; -webkit-font-smoothing: antialiased; background: url(&quot;data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMzBweCIgd2lkdGg9IjMwcHgiIHZpZXdCb3g9Ii0xIC0xIDMxIDMxIj48Zz48cGF0aCBkPSJNMjkuNDQ5LDE0LjY2MiBDMjkuNDQ5LDIyLjcyMiAyMi44NjgsMjkuMjU2IDE0Ljc1LDI5LjI1NiBDNi42MzIsMjkuMjU2IDAuMDUxLDIyLjcyMiAwLjA1MSwxNC42NjIgQzAuMDUxLDYuNjAxIDYuNjMyLDAuMDY3IDE0Ljc1LDAuMDY3IEMyMi44NjgsMC4wNjcgMjkuNDQ5LDYuNjAxIDI5LjQ0OSwxNC42NjIiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxIj48L3BhdGg+PHBhdGggZD0iTTE0LjczMywxLjY4NiBDNy41MTYsMS42ODYgMS42NjUsNy40OTUgMS42NjUsMTQuNjYyIEMxLjY2NSwyMC4xNTkgNS4xMDksMjQuODU0IDkuOTcsMjYuNzQ0IEM5Ljg1NiwyNS43MTggOS43NTMsMjQuMTQzIDEwLjAxNiwyMy4wMjIgQzEwLjI1MywyMi4wMSAxMS41NDgsMTYuNTcyIDExLjU0OCwxNi41NzIgQzExLjU0OCwxNi41NzIgMTEuMTU3LDE1Ljc5NSAxMS4xNTcsMTQuNjQ2IEMxMS4xNTcsMTIuODQyIDEyLjIxMSwxMS40OTUgMTMuNTIyLDExLjQ5NSBDMTQuNjM3LDExLjQ5NSAxNS4xNzUsMTIuMzI2IDE1LjE3NSwxMy4zMjMgQzE1LjE3NSwxNC40MzYgMTQuNDYyLDE2LjEgMTQuMDkzLDE3LjY0MyBDMTMuNzg1LDE4LjkzNSAxNC43NDUsMTkuOTg4IDE2LjAyOCwxOS45ODggQzE4LjM1MSwxOS45ODggMjAuMTM2LDE3LjU1NiAyMC4xMzYsMTQuMDQ2IEMyMC4xMzYsMTAuOTM5IDE3Ljg4OCw4Ljc2NyAxNC42NzgsOC43NjcgQzEwLjk1OSw4Ljc2NyA4Ljc3NywxMS41MzYgOC43NzcsMTQuMzk4IEM4Ljc3NywxNS41MTMgOS4yMSwxNi43MDkgOS43NDksMTcuMzU5IEM5Ljg1NiwxNy40ODggOS44NzIsMTcuNiA5Ljg0LDE3LjczMSBDOS43NDEsMTguMTQxIDkuNTIsMTkuMDIzIDkuNDc3LDE5LjIwMyBDOS40MiwxOS40NCA5LjI4OCwxOS40OTEgOS4wNCwxOS4zNzYgQzcuNDA4LDE4LjYyMiA2LjM4NywxNi4yNTIgNi4zODcsMTQuMzQ5IEM2LjM4NywxMC4yNTYgOS4zODMsNi40OTcgMTUuMDIyLDYuNDk3IEMxOS41NTUsNi40OTcgMjMuMDc4LDkuNzA1IDIzLjA3OCwxMy45OTEgQzIzLjA3OCwxOC40NjMgMjAuMjM5LDIyLjA2MiAxNi4yOTcsMjIuMDYyIEMxNC45NzMsMjIuMDYyIDEzLjcyOCwyMS4zNzkgMTMuMzAyLDIwLjU3MiBDMTMuMzAyLDIwLjU3MiAxMi42NDcsMjMuMDUgMTIuNDg4LDIzLjY1NyBDMTIuMTkzLDI0Ljc4NCAxMS4zOTYsMjYuMTk2IDEwLjg2MywyNy4wNTggQzEyLjA4NiwyNy40MzQgMTMuMzg2LDI3LjYzNyAxNC43MzMsMjcuNjM3IEMyMS45NSwyNy42MzcgMjcuODAxLDIxLjgyOCAyNy44MDEsMTQuNjYyIEMyNy44MDEsNy40OTUgMjEuOTUsMS42ODYgMTQuNzMzLDEuNjg2IiBmaWxsPSIjYmQwODFjIj48L3BhdGg+PC9nPjwvc3ZnPg==&quot;) 3px 50% / 14px 14px no-repeat rgb(189, 8, 28);">Save</span><div id="feedly-mini" title="feedly Mini tookit"></div></body></html>
