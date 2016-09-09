@@ -42,18 +42,25 @@ CHIP ALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-    And16(a=false,b=false,out=zero16);
-    And16(a=true,b=true,out=one16);
-
     Not16(in=x,out=notx);
     Not16(in=y,out=noty);
 
-    Mux4Way16(a=x,b=zero16,c=notx,d=one16,sel[0]=zx,sel[1]=nx,out=xbuf);
-    Mux4Way16(a=y,b=zero16,c=noty,d=one16,sel[0]=zy,sel[1]=ny,out=ybuf);
+    Mux4Way16(a=x,b=false,c=notx,d=true,sel[0]=zx,sel[1]=nx,out=xbuf);
+    Mux4Way16(a=y,b=false,c=noty,d=true,sel[0]=zy,sel[1]=ny,out=ybuf);
 
     Add16(a=xbuf,b=ybuf,out=addxy);
     And16(a=xbuf,b=ybuf,out=andxy);
     Mux16(a=andxy,b=addxy,sel=f,out=cmdout);
     Not16(in=cmdout,out=notcmdout);
-    Mux16(a=cmdout,b=notcmdout,sel=no,out=out);
+    Mux16(a=cmdout,b=notcmdout,sel=no,out=result);
+    And16(a=true,b=result,out=out,out[15]=msb,out[0..7]=rpt1,out[8..15]=rpt2);
+
+    // < 0 test
+    Or(a=false,b=msb,out=ng);
+
+    //zero test
+    Or8Way(in=rpt1,out=or1);
+    Or8Way(in=rpt2,out=or2);
+    Or(a=or1,b=or2,out=nzr);
+    Not(in=nzr,out=zr);
 }
