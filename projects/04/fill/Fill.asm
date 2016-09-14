@@ -9,3 +9,48 @@
 // program clears the screen, i.e. writes "white" in every pixel.
 
 // Put your code here.
+
+(LOOP)
+    M=D
+    @count
+    M=-1
+    @color
+    M=0 //white by default
+
+    //get key
+    @24576
+    D=M
+    @FILL
+    D;JEQ
+
+    @color//keyboard isn't 0, so set black
+    M=-1
+
+(FILL)
+    //increment counter
+    @count
+    M=M+1
+
+    @SCREEN//calculate color destination
+    D=A
+    @count
+    D=D+M
+    @next_vram_dest
+    M=D
+
+    @color//set 16 bits of color
+    D=M
+    @next_vram_dest
+    A=M
+    M=D
+
+    @24575 //max vram
+    D=A
+    @next_vram_dest
+    D=D-M
+    @FILL
+    D;JGT
+
+    @LOOP
+    0;JMP
+    //lol
