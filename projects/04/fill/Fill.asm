@@ -31,20 +31,20 @@
     @count
     M=M+1
 
-    @SCREEN//calculate color destination
+    @SCREEN//find next vram destination
     D=A
     @count
     D=D+M
     @next_vram_dest
     M=D
 
-    @color//set 16 bits of color
+    @color//set 16 bits of color at vram dest
     D=M
     @next_vram_dest
     A=M
     M=D
 
-    @24575 //max vram
+    @24575 //draw until max vram
     D=A
     @next_vram_dest
     D=D-M
