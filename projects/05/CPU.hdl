@@ -39,5 +39,37 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    And16(a=true,b=instruction,out=ins,out[15]=cInst,out[12]=aOrM,
+        out[11]=c1,out[10]=c2,out[9]=c3,out[8]=c4,out[7]=c5,out[6]=c6,
+        out[5]=aDest,out[4]=dDest,out[3]=mDest,out[0..2]=jmpBits);
+
+    Mux16(a=aluOut,b=ins,sel=aInstr,out=aMuxOut);
+    ARegister(in=aMuxOut,load=writeA,out=outA,out[0..14]=addressM);
+
+    DRegister(in=aluOut,load=writeD,out=outD);
+    Mux16(a=outA,b=inM, sel=aOrM,out=aluMuxOut);
+    PC(reset=reset,load=doJump,inc=true,in=outA,out[0..14]=pc);
+
+    And(a=cInst,b=mDest,out=writeM);
+    And(a=cInst,b=dDest,out=writeD);
+    Or(a=aInstr,b=aDest,out=writeA);
+
+    Not(in=cInst,out=aInstr);
+    And(a=cInst,b=jmpOut,out=doJump);
+
+    ALU(x=outD,y=aluMuxOut,zx=c1,nx=c2,zy=c3, ny=c4,f=c5,no=c6,out=outM,out=aluOut,
+        zr=zrOut,ng=ngOut);
+
+    //jumps
+    Mux8Way16(a=false,b[0]=jgt,c[0]=zrOut,d[0]=jgeOut,e[0]=ngOut,f[0]=notzrOut,g[0]=jle,h=true,sel=jmpBits,out[0]=jmpOut);
+
+    //jgt
+    Or(a=zrOut,b=ngOut,out=gtOrOut);
+    Not(in=gtOrOut,out=jgt);
+    //jge
+    Not(in=ngOut,out=notngOut);
+    Or(a=zrOut,b=notngOut,out=jgeOut);
+
+    Not(in=zrOut,out=notzrOut);//jne
+    Or(a=zrOut,b=ngOut,out=jle);//jle
 }
