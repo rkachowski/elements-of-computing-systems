@@ -1,10 +1,35 @@
 
+A_COMMAND = "A_COMMAND"
+C_COMMAND = "C_COMMAND"
+L_COMMAND = "L_COMMAND"
+
 class Parser
   def initialize file
     raise "File not found at #{file}" unless File.exists? file
 
+    @code = File.open(file).read.lines.map{|l| l.chomp }.delete_if{|l| l.empty? or l.start_with?('//')}
+    @current_index = -1
+  end
+
+  def commandType
+    return nil unless @command
+
+    return A_COMMAND if @command.start_with? '@'
+    return C_COMMAND unless Code.parse(@command).flatten.empty?
 
   end
+
+  def advance
+    return unless has_more_commands
+
+    @current_index++
+    @command = @code[@current_index]
+  end
+
+  def has_more_commands
+    @current_index + 1 < @code.length
+  end
+
 end
 
 class Code
