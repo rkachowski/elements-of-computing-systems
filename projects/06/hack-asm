@@ -1,0 +1,140 @@
+#!/usr/bin/env ruby
+
+require 'rake'
+
+A_COMMAND = "A_COMMAND"
+C_COMMAND = "C_COMMAND"
+L_COMMAND = "L_COMMAND"
+
+class Code
+  @@comp_table ={
+    # a = 0
+    '0' => "0101010",
+    '1' => "0111111",
+    '-1' => "0111010",
+    'D' => "0001100",
+    'A' => "0110000",
+    '!D' => "0001101",
+    '!A' => "0110001",
+    '-D' => "0001111",
+    '-A' => "0110011",
+    'D+1' => "0011111",
+    'A+1' => "0110111",
+    'D-1' => "0001110",
+    'A-1' => "0110010",
+    'D+A' => "0000010",
+    'D-A' => "0010011",
+    'A-D' => "0000111",
+    'D&A' => "0000000",
+    'D|A' => "0010101",
+
+    #a = 1
+    'M' => "1110000",
+    '!M' => "1110001",
+    '-M' => "1110011",
+    'M+1' => "1110111",
+    'M-1' => "1110010",
+    'D+M' => "1000010",
+    'D-M' => "1010011",
+    'M-D' => "1000111",
+    'D&M' => "1000000",
+    'D|M' => "1010101"
+  }
+
+  @@dst_table = {
+    'M' => "001", 
+    'D' => "010", 
+    'MD' => "011", 
+    'A' => "100", 
+    'AM' => "101", 
+    'AD' => "110", 
+    'AMD' => "111" 
+  }
+  @@jump_table = {
+    'JGT' => "001", 
+    'JEQ' => "010", 
+    'JGE' => "011", 
+    'JLT' => "100", 
+    'JNE' => "101", 
+    'JLE' => "110", 
+    'JMP' => "111" 
+  }
+
+  def self.dest mnem
+    dst, _, _ = parse mnem
+
+    @@dst_table[dst] || "000"
+  end
+
+  def self.comp mnem
+
+    _,comp, _ = parse mnem
+    raise "Unknown comp sequence #{mnem} " unless @@comp_table[comp]
+    @@comp_table[comp]
+  end
+
+  def self.jump mnem
+    _,_,jmp = parse mnem
+    @@dst_table[jmp] || "000"
+  end
+
+  def self.parse inst
+    dst, comp, jmp = inst.scan(/^(\w=)?([^;\n]{0,3});?(J\w\w)?/).flatten
+
+    dst = dst.split('=').first if dst
+    [dst, comp, jmp]
+  end
+
+  def self.mnem_to_bin inst
+
+    "111"+comp(inst)+dest(inst)+jump(inst)
+  end
+end
+
+class SymbolTable
+end
+
+def a_command inst
+  value = inst.split('@').last
+  "1#{"%015b" % value}"
+end
+
+def command_type command
+
+  return A_COMMAND if command.start_with? '@'
+  return L_COMMAND if command =~ /^(\(\w*\))$/
+  return C_COMMAND unless Code.parse(command).flatten.empty?
+
+end
+
+def assemble filename, output
+  puts "Assembling #{filename}..."
+
+  raise "File not found at #{filename}" unless File.exists? filename
+
+  code = File.open(filename).read.lines.map{|l| l.strip }.delete_if{|l| l.empty? or l.start_with?('//')}
+  assembled = code.map do |inst|
+
+    case command_type inst
+    when A_COMMAND
+      a_command inst
+    when L_COMMAND
+      raise "unsupported LCOMMAND"
+    when C_COMMAND
+      Code.mnem_to_bin inst
+    end
+
+  end
+
+  puts "Writing to #{output}"
+
+  File.open(output.to_s,"w") { |f| f << assembled.join("\n") }
+end
+
+
+abort "Usage: hack-asm <filename> <output>" unless ARGV[0]
+
+filename = ARGV[0].to_s
+output = ARGV[1] || filename.ext(".hack")
+
+assemble filename, output
