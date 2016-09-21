@@ -72,7 +72,10 @@ class Code
   def self.comp mnem
 
     _,comp, _ = parse mnem
-    raise "Unknown comp sequence #{mnem} " unless @@comp_table[comp]
+     unless @@comp_table[comp]
+       binding.pry
+    raise "Unknown comp sequence #{comp} from instruction #{mnem} "
+     end
     @@comp_table[comp]
   end
 
@@ -82,7 +85,7 @@ class Code
   end
 
   def self.parse inst
-    dst, comp, jmp = inst.scan(/^(\w=)?([^;\n]{0,3});?(J\w\w)?/).flatten
+    dst, comp, jmp = inst.scan(/^(\w{0,3}=)?([^;\n]{0,3});?(J\w\w)?/).flatten
 
     dst = dst.split('=').first if dst
     [dst, comp, jmp]
@@ -98,7 +101,11 @@ end
 
 def a_command inst
   value = inst.split('@').last
+  begin
   "0#{"%015b" % value}"
+  rescue
+    binding.pry
+  end
 end
 
 def command_type command
@@ -159,12 +166,14 @@ end
 
 def remove_symbols code
   all_symbols = @symbol_table[:vars].merge(@symbol_table[:labels])
+  lines_with_symbols = code.select{|l| l =~ /@\D+.*/}
 
-  all_symbols.each do |sym, val|
-    code.select{|line| line =~ /@#{sym}\b/}.each {|line| line.gsub!(sym, val.to_s)}
+  lines_with_symbols.each_with_index do |line|
+    sym = line.scan(/@(.*)/)[0][0]
+    line.gsub!(sym, all_symbols[sym].to_s)
   end
 
-  code.delete_if {|l| l =~ /^(\(\w*\))$/ }
+  code.delete_if {|l| l =~ /^\(.*\)$/ }
 end
 
 abort "Usage: hack-asm <filename> <output>" unless ARGV[0]
@@ -175,9 +184,10 @@ output = ARGV[1] || filename.ext(".hack")
 abort "File not found at #{filename}" unless File.exists? filename
 
 file = File.open(filename).read.lines
+#
 #remove comments and whitespace
 code = file.delete_if {|l| l.start_with?('//')}.map{|l| l.split('//').first.strip }.delete_if{|l| l.empty?}
-
 build_symbol_table code
 remove_symbols code
+
 assemble code, filename, output
