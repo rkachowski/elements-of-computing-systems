@@ -1,10 +1,13 @@
 #!/usr/bin/env ruby
 
 require 'rake'
+require 'pry-byebug'
 
 A_COMMAND = "A_COMMAND"
 C_COMMAND = "C_COMMAND"
 L_COMMAND = "L_COMMAND"
+
+VAR_BASE = 1024
 
 class Code
   @@comp_table ={
@@ -75,7 +78,7 @@ class Code
 
   def self.jump mnem
     _,_,jmp = parse mnem
-    @@dst_table[jmp] || "000"
+    @@jump_table[jmp] || "000"
   end
 
   def self.parse inst
@@ -91,12 +94,11 @@ class Code
   end
 end
 
-class SymbolTable
-end
+@symbol_table = {labels:{}, vars:{}}
 
 def a_command inst
   value = inst.split('@').last
-  "1#{"%015b" % value}"
+  "0#{"%015b" % value}"
 end
 
 def command_type command
@@ -107,12 +109,9 @@ def command_type command
 
 end
 
-def assemble filename, output
+def assemble code, filename, output
   puts "Assembling #{filename}..."
 
-  raise "File not found at #{filename}" unless File.exists? filename
-
-  code = File.open(filename).read.lines.map{|l| l.strip }.delete_if{|l| l.empty? or l.start_with?('//')}
   assembled = code.map do |inst|
 
     case command_type inst
@@ -131,10 +130,54 @@ def assemble filename, output
   File.open(output.to_s,"w") { |f| f << assembled.join("\n") }
 end
 
+def build_symbol_table code
+  code.each_with_index do |inst, ind|
+
+    case command_type inst
+    when A_COMMAND
+      if inst =~ /[^@\d]/
+        sym = inst.split('@').last
+
+        @symbol_table[:vars][sym] = @symbol_table[:vars].count unless @symbol_table[:vars][sym] or @symbol_table[:labels][sym]
+      end
+    when L_COMMAND
+      sym = inst.scan(/\((\w*)\)/).flatten.first
+      @symbol_table[:labels][sym] = ind
+      @symbol_table[:vars].delete sym
+    end
+  end
+
+  #gonna remove labels from code, so transform offsets to reflect this
+  @symbol_table[:labels] = @symbol_table[:labels].reduce({}) do |table, (k,v)|
+    table[k] = v - @symbol_table[:labels].values.find_index(v)
+    table
+  end
+
+  @symbol_table[:vars].each {|k,v| @symbol_table[:vars][k] = v + VAR_BASE }
+  @symbol_table[:vars].merge!({"R0"=>0, "R1"=>1, "R2"=>2, "R3"=>3, "R4"=>4, "R5"=>5, "R6"=>6, "R7"=>7, "R8"=>8, "R9"=>9, "R10"=>10, "R11"=>11, "R12"=>12, "R13"=>13, "R14"=>14, "R15"=>15})
+end
+
+def remove_symbols code
+  all_symbols = @symbol_table[:vars].merge(@symbol_table[:labels])
+
+  all_symbols.each do |sym, val|
+    code.select{|line| line =~ /@#{sym}\b/}.each {|line| line.gsub!(sym, val.to_s)}
+  end
+
+  code.delete_if {|l| l =~ /^(\(\w*\))$/ }
+end
 
 abort "Usage: hack-asm <filename> <output>" unless ARGV[0]
 
 filename = ARGV[0].to_s
 output = ARGV[1] || filename.ext(".hack")
 
-assemble filename, output
+abort "File not found at #{filename}" unless File.exists? filename
+
+file = File.open(filename).read.lines
+#remove comments and whitespace
+code = file.delete_if {|l| l.start_with?('//')}.map{|l| l.split('//').first.strip }.delete_if{|l| l.empty?}
+
+build_symbol_table code
+remove_symbols code
+assemble code, filename, output
