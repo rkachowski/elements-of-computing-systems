@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+
+require 'rake'
+require 'pry-byebug'
+
+
+abort "Usage: hack-vm <filename>" unless ARGV[0]
+
+filename = ARGV[0].to_s
+output = ARGV[1] || filename.ext(".asm")
+
+abort "File not found at #{filename}" unless File.exists? filename
+
+COMMAND_TYPES = %i[arithmetic push pop label goto if function return call]
+ARITHMETIC =  %w[add sub neg eq gl lt and or not]
+
+def command_for_line line
+  cmd = line.split(' ').first
+
+  return cmd.to_sym if COMMAND_TYPES.include? cmd.to_sym
+  return :arithmetic if ARITHMETIC.include? cmd
+
+  raise "Unknown command #{cmd}!"
+end
+
+
+def parse filename
+
+  lines = File.open(filename).read.lines.to_a
+  #remove comments and leading / trailing whitespace
+  lines.map! {|l| l.strip }
+  lines.delete_if {|l| l.start_with?('//') or l.empty?}
+
+  #map each line to command and args
+  lines.map do |l|
+    cmd_type = command_for_line l
+
+    cmd, arg1, arg2 = l.scan(/(\w+)\s?(\w+)?\s?(\w+)?/).flatten
+    {cmd: cmd, cmd_type: cmd_type, arg1: arg1, arg2:arg2}
+  end
+end
+
+binding.pry
+
+puts 'fuck'
+
