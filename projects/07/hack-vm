@@ -43,7 +43,8 @@ end
 class Writer
 
   def initialize
-      @lines=[]
+    @labelcount=0
+    @lines=[]
   end
 
   def current_filename fname
@@ -69,20 +70,67 @@ class Writer
 
   private 
 
+  def label_id
+    @labelcount+=1
+    "#{@fname}.#{@labelcount}"
+  end
+
   def write_arithmetic cmd
+    pop "R13"
+
+    #shortcut for one argument commands
+    if cmd[:cmd] == "not"
+      @lines.concat %W(@R13 D=!M @R15 M=D)
+      push "R15"
+      return
+    end
+    if cmd[:cmd] == "neg"
+      @lines.concat %W(@R13 D=-M @R15 M=D)
+      push "R15"
+      return
+    end
+
+    #two argument commands
+    pop "R14"
+
+    #load r13 and r14 into d and m registers
+    @lines.concat %W(@R13 D=M @R14)
+
     case cmd[:cmd]
     when "add"
-      puts "add"
+      @lines.concat %W(D=D+M @R15 M=D)
+    when "sub"
+      @lines.concat %W(D=D-M @R15 M=D)
+    when "and"
+      @lines.concat %W(D=D&M @R15 M=D)
+    when "or"
+      @lines.concat %W(D=D|M @R15 M=D)
+    when "eq","gt","lt"
+      true_lbl = label_id
+      end_lbl = label_id
 
-      pop "R13"
-      pop "R14"
-
-      @lines.concat %W(@R13 D=M @R14 D=D+M @R15 M=D)
-
-      push "R15"
+      @lines.concat [
+        "D=D-M",
+        "@#{true_lbl}",
+        "D;J#{cmd[:cmd].upcase}",
+        "@0", #result is false
+        "D=A",
+        "@R15",
+        "M=D",
+        "@#{end_lbl}",
+        "0;JMP",
+        "(#{true_lbl})",
+        "@-1",#result is true
+        "D=A",
+        "@R15",
+        "M=D",
+        "(#{end_lbl})"
+      ]
     else
       raise "unsupported cmd #{cmd}"
     end
+
+    push "R15"
   end
 
   def write_push_pop cmd
@@ -100,13 +148,13 @@ class Writer
   end
 
   def push src
-      @lines.concat %W(@#{src} D=M @SP A=M M=D)
-      inc_sp
+    @lines.concat %W(@#{src} D=M @SP A=M M=D)
+    inc_sp
   end
 
   def pop dest
-      dec_sp
-      @lines.concat %W(A=M D=M @#{dest} M=D)
+    dec_sp
+    @lines.concat %W(A=M D=M @#{dest} M=D)
   end
 
   def inc_sp
@@ -116,11 +164,12 @@ class Writer
   def dec_sp
     @lines.concat %W(@SP D=M M=D-1)
   end
-
 end
 
 writer = Writer.new
 cmds = parse filename
+writer.current_filename filename
+
 cmds.each {|c| writer.write_cmd c }
 
 writer.finish output
