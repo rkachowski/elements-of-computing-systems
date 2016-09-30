@@ -40,7 +40,88 @@ def parse filename
   end
 end
 
-binding.pry
+class Writer
 
-puts 'fuck'
+  def initialize
+      @lines=[]
+  end
+
+  def current_filename fname
+    @fname = fname
+  end
+
+
+  def write_cmd cmd
+    case cmd[:cmd_type]
+    when :push, :pop
+      write_push_pop cmd
+    when :arithmetic
+      write_arithmetic cmd
+    else
+      raise "unknown command #{cmd}"
+    end
+  end
+
+  def finish name
+    @lines << "\n"
+    File.open(name,'w') { |f| f << @lines.join("\n")}
+  end
+
+  private 
+
+  def write_arithmetic cmd
+    case cmd[:cmd]
+    when "add"
+      puts "add"
+
+      pop "R13"
+      pop "R14"
+
+      @lines.concat %W(@R13 D=M @R14 D=D+M @R15 M=D)
+
+      push "R15"
+    else
+      raise "unsupported cmd #{cmd}"
+    end
+  end
+
+  def write_push_pop cmd
+    case cmd[:cmd_type]
+    when :push
+      raise "unsupported segment! - #{cmd[:arg1]}" unless cmd[:arg1] == 'constant'
+
+      @lines.concat %W(@#{cmd[:arg2]} D=A @R13 M=D)
+      push "R13"
+    when :pop
+      raise "no pop commands supported!"
+    else
+      raise "invalid push pop command - #{cmd}"
+    end
+  end
+
+  def push src
+      @lines.concat %W(@#{src} D=M @SP A=M M=D)
+      inc_sp
+  end
+
+  def pop dest
+      dec_sp
+      @lines.concat %W(A=M D=M @#{dest} M=D)
+  end
+
+  def inc_sp
+    @lines.concat %W(@SP D=M M=D+1)
+  end
+
+  def dec_sp
+    @lines.concat %W(@SP D=M M=D-1)
+  end
+
+end
+
+writer = Writer.new
+cmds = parse filename
+cmds.each {|c| writer.write_cmd c }
+
+writer.finish output
 
