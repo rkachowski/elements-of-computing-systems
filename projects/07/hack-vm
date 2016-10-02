@@ -76,22 +76,22 @@ class Writer
   end
 
   def write_arithmetic cmd
-    pop "R13"
+    pop "R14"
 
     #shortcut for one argument commands
     if cmd[:cmd] == "not"
-      @lines.concat %W(@R13 D=!M @R15 M=D)
+      @lines.concat %W(@R14 D=!M @R15 M=D)
       push "R15"
       return
     end
     if cmd[:cmd] == "neg"
-      @lines.concat %W(@R13 D=-M @R15 M=D)
+      @lines.concat %W(@R14 D=-M @R15 M=D)
       push "R15"
       return
     end
 
     #two argument commands
-    pop "R14"
+    pop "R13"
 
     #load r13 and r14 into d and m registers
     @lines.concat %W(@R13 D=M @R14)
