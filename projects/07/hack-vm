@@ -45,7 +45,6 @@ end
 class Writer
 
   def initialize
-    @labelcount=0
     @lines=[]
   end
 
@@ -72,9 +71,8 @@ class Writer
 
   private 
 
-  def label_id
-    @labelcount+=1
-    "#{File.basename(@fname,".*").upcase}.#{@labelcount}"
+  def static position
+    "@#{File.basename(@fname,".*").upcase}.#{position}"
   end
 
   def write_arithmetic cmd
@@ -135,17 +133,25 @@ class Writer
     push "R15"
   end
 
+  def address_segment segment, position
+    case segment
+    when "pointer","temp"
+      ["@#{SEGMENT_TO_ASM[segment]}", "D=A","@#{position}","A=D+A"]
+    when "static"
+      [static(position)]
+    else
+      ["@#{SEGMENT_TO_ASM[segment]}", "D=M","@#{position}","A=D+A"]
+    end
+  end
+
   def write_push_pop cmd
     cmd_type, segment, position = cmd[:cmd_type], cmd[:arg1], cmd[:arg2]
     case cmd_type
     when :push
       case segment
-      when 'local','argument','this','that','temp',"pointer"
+      when 'local','argument','this','that','temp',"pointer","static"
+        @lines.concat address_segment(segment, position)
         @lines.concat %W(
-        @#{SEGMENT_TO_ASM[segment]}
-        #{segment == 'temp' or segment =="pointer" ? "D=A" : "D=M"}
-        @#{position}
-        A=D+A
         D=M
         @R13
         M=D)
@@ -160,12 +166,9 @@ class Writer
     when :pop
       pop "R13"
       case segment
-      when 'local','argument','this','that','temp',"pointer"
+      when 'local','argument','this','that','temp',"pointer","static"
+        @lines.concat address_segment(segment, position)
         @lines.concat %W(
-        @#{SEGMENT_TO_ASM[segment]}
-        #{segment == 'temp' or segment == "pointer" ? "D=A" : "D=M"}
-        @#{position}
-        A=D+A
         D=A
         @R14
         M=D
