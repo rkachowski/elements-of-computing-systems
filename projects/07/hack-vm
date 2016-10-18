@@ -14,6 +14,8 @@ abort "File not found at #{filename}" unless File.exists? filename
 COMMAND_TYPES = %i[arithmetic push pop label goto if function return call]
 ARITHMETIC =  %w[add sub neg eq gt lt and or not]
 
+SEGMENT_TO_ASM = {"local"=>"LCL","argument"=>"ARG","this"=>"THIS","that"=>"THAT","temp"=>"5"}
+
 def command_for_line line
   cmd = line.split(' ').first
 
@@ -134,14 +136,48 @@ class Writer
   end
 
   def write_push_pop cmd
-    case cmd[:cmd_type]
+    cmd_type, segment, position = cmd[:cmd_type], cmd[:arg1], cmd[:arg2]
+    case cmd_type
     when :push
-      raise "unsupported segment! - #{cmd[:arg1]}" unless cmd[:arg1] == 'constant'
+      case segment
+      when 'local','argument','this','that','temp'
+        @lines.concat %W(
+        @#{SEGMENT_TO_ASM[segment]}
+        #{segment == 'temp' ? "D=A" : "D=M"}
+        @#{position}
+        A=D+A
+        D=M
+        @R13
+        M=D)
+      when 'constant'
+        @lines.concat %W(@#{position} D=A @R13 M=D)
+      else
+        raise "unsupported segment! - #{segment}"
+      end
 
-      @lines.concat %W(@#{cmd[:arg2]} D=A @R13 M=D)
+      #write the value we want to push into R13 when constant
       push "R13"
     when :pop
-      raise "no pop commands supported!"
+      pop "R13"
+      case segment
+      when 'local','argument','this','that','temp'
+        @lines.concat %W(
+        @#{SEGMENT_TO_ASM[segment]}
+        #{segment == 'temp' ? "D=A" : "D=M"}
+        @#{position}
+        A=D+A
+        D=A
+        @R14
+        M=D
+        @R13
+        D=M
+        @R14
+        A=M
+        M=D
+        )
+      else
+        raise "unsupported segment! - #{segment}"
+      end
     else
       raise "invalid push pop command - #{cmd}"
     end
