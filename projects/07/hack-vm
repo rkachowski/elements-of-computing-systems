@@ -14,7 +14,7 @@ abort "File not found at #{filename}" unless File.exists? filename
 COMMAND_TYPES = %i[arithmetic push pop label goto if function return call]
 ARITHMETIC =  %w[add sub neg eq gt lt and or not]
 
-SEGMENT_TO_ASM = {"local"=>"LCL","argument"=>"ARG","this"=>"THIS","that"=>"THAT","temp"=>"5"}
+SEGMENT_TO_ASM = {"local"=>"LCL","argument"=>"ARG","this"=>"THIS","that"=>"THAT","temp"=>"5","pointer"=>"3"}
 
 def command_for_line line
   cmd = line.split(' ').first
@@ -140,10 +140,10 @@ class Writer
     case cmd_type
     when :push
       case segment
-      when 'local','argument','this','that','temp'
+      when 'local','argument','this','that','temp',"pointer"
         @lines.concat %W(
         @#{SEGMENT_TO_ASM[segment]}
-        #{segment == 'temp' ? "D=A" : "D=M"}
+        #{segment == 'temp' or segment =="pointer" ? "D=A" : "D=M"}
         @#{position}
         A=D+A
         D=M
@@ -160,10 +160,10 @@ class Writer
     when :pop
       pop "R13"
       case segment
-      when 'local','argument','this','that','temp'
+      when 'local','argument','this','that','temp',"pointer"
         @lines.concat %W(
         @#{SEGMENT_TO_ASM[segment]}
-        #{segment == 'temp' ? "D=A" : "D=M"}
+        #{segment == 'temp' or segment == "pointer" ? "D=A" : "D=M"}
         @#{position}
         A=D+A
         D=A
