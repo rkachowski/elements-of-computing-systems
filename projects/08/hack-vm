@@ -1,0 +1,233 @@
+#!/usr/bin/env ruby
+
+require 'rake'
+require 'pry-byebug'
+
+
+abort "Usage: hack-vm <filename>" unless ARGV[0]
+
+filename = ARGV[0].to_s
+output = ARGV[1] || filename.ext(".asm")
+
+abort "File not found at #{filename}" unless File.exists? filename
+
+COMMAND_TYPES = %i[arithmetic push pop label goto if-goto function return call]
+ARITHMETIC =  %w[add sub neg eq gt lt and or not]
+
+SEGMENT_TO_ASM = {"local"=>"LCL","argument"=>"ARG","this"=>"THIS","that"=>"THAT","temp"=>"5","pointer"=>"3"}
+
+def command_for_line line
+  cmd = line.split(' ').first
+
+  return cmd.to_sym if COMMAND_TYPES.include? cmd.to_sym
+  return :arithmetic if ARITHMETIC.include? cmd
+
+  raise "Unknown command #{cmd}!"
+end
+
+
+def parse filename
+
+  lines = File.open(filename).read.lines.to_a
+  #remove comments and leading / trailing whitespace
+  lines.map! {|l| l.strip }
+  lines.delete_if {|l| l.start_with?('//') or l.empty?}
+
+  #map each line to command and args
+  lines.map do |l|
+    cmd_type = command_for_line l
+
+    cmd, arg1, arg2 = l.scan(/([\w-]+)\s?(\w+)?\s?(\w+)?/).flatten
+    {cmd: cmd, cmd_type: cmd_type, arg1: arg1, arg2:arg2}
+  end
+end
+
+class Writer
+
+  def initialize
+    @lines=[]
+    @label_count=0
+  end
+
+  def current_filename fname
+    @fname = fname
+  end
+
+  def write_cmd cmd
+    case cmd[:cmd_type]
+    when :push, :pop
+      write_push_pop cmd
+    when :arithmetic
+      write_arithmetic cmd
+    when :label
+      write_label cmd[:arg1]
+    when "if-goto".to_sym
+      write_if_goto cmd[:arg1]
+    else
+      raise "unknown command #{cmd}"
+    end
+  end
+
+  def write_label name
+    @lines << "(#{label_id(name)})"
+  end
+
+  def finish name
+    @lines << "\n"
+    File.open(name,'w') { |f| f << @lines.join("\n")}
+  end
+
+  private 
+
+  def static position
+    "@#{File.basename(@fname,".*").upcase}.#{position}"
+  end
+
+  def label_id id=nil
+    @label_count+=1
+    id || "label_#{@label_count}"
+  end
+
+  def write_if_goto label
+    pop "R13"
+    @lines.concat %W(@R13 D=M @#{label} D;JNE)
+  end
+
+  def write_arithmetic cmd
+    pop "R14"
+
+    #shortcut for one argument commands
+    if cmd[:cmd] == "not"
+      @lines.concat %W(@R14 D=!M @R15 M=D)
+      push "R15"
+      return
+    end
+    if cmd[:cmd] == "neg"
+      @lines.concat %W(@R14 D=-M @R15 M=D)
+      push "R15"
+      return
+    end
+
+    #two argument commands
+    pop "R13"
+
+    #load r13 and r14 into d and m registers
+    @lines.concat %W(@R13 D=M @R14)
+
+    case cmd[:cmd]
+    when "add"
+      @lines.concat %W(D=D+M @R15 M=D)
+    when "sub"
+      @lines.concat %W(D=D-M @R15 M=D)
+    when "and"
+      @lines.concat %W(D=D&M @R15 M=D)
+    when "or"
+      @lines.concat %W(D=D|M @R15 M=D)
+    when "eq","gt","lt"
+      true_lbl = label_id
+      end_lbl = label_id
+
+      @lines.concat [
+        "D=D-M",
+        "@#{true_lbl}",
+        "D;J#{cmd[:cmd].upcase}",
+        "@0", #result is false
+        "D=A",
+        "@R15",
+        "M=D",
+        "@#{end_lbl}",
+        "0;JMP",
+        "(#{true_lbl})",
+        "@1",#result is true
+        "D=-A",
+        "@R15",
+        "M=D",
+        "(#{end_lbl})"
+      ]
+    else
+      raise "unsupported cmd #{cmd}"
+    end
+
+    push "R15"
+  end
+
+  def address_segment segment, position
+    case segment
+    when "pointer","temp"
+      ["@#{SEGMENT_TO_ASM[segment]}", "D=A","@#{position}","A=D+A"]
+    when "static"
+      [static(position)]
+    else
+      ["@#{SEGMENT_TO_ASM[segment]}", "D=M","@#{position}","A=D+A"]
+    end
+  end
+
+  def write_push_pop cmd
+    cmd_type, segment, position = cmd[:cmd_type], cmd[:arg1], cmd[:arg2]
+    case cmd_type
+    when :push
+      case segment
+      when 'local','argument','this','that','temp',"pointer","static"
+        @lines.concat address_segment(segment, position)
+        @lines.concat %W(
+        D=M
+        @R13
+        M=D)
+      when 'constant'
+        @lines.concat %W(@#{position} D=A @R13 M=D)
+      else
+        raise "unsupported segment! - #{segment}"
+      end
+
+      #write the value we want to push into R13 when constant
+      push "R13"
+    when :pop
+      pop "R13"
+      case segment
+      when 'local','argument','this','that','temp',"pointer","static"
+        @lines.concat address_segment(segment, position)
+        @lines.concat %W(
+        D=A
+        @R14
+        M=D
+        @R13
+        D=M
+        @R14
+        A=M
+        M=D
+        )
+      else
+        raise "unsupported segment! - #{segment}"
+      end
+    else
+      raise "invalid push pop command - #{cmd}"
+    end
+  end
+
+  def push src
+    @lines.concat %W(@#{src} D=M @SP A=M M=D)
+    inc_sp
+  end
+
+  def pop dest
+    dec_sp
+    @lines.concat %W(A=M D=M @#{dest} M=D)
+  end
+
+  def inc_sp
+    @lines.concat %W(@SP D=M M=D+1)
+  end
+
+  def dec_sp
+    @lines.concat %W(@SP D=M M=D-1)
+  end
+end
+
+writer = Writer.new
+cmds = parse filename
+writer.current_filename filename
+
+cmds.each {|c| writer.write_cmd c }
+
+writer.finish output
+
