@@ -63,6 +63,8 @@ class Writer
       write_label cmd[:arg1]
     when "if-goto".to_sym
       write_if_goto cmd[:arg1]
+    when :goto
+      write_goto cmd[:arg1]
     else
       raise "unknown command #{cmd}"
     end
@@ -91,6 +93,10 @@ class Writer
   def write_if_goto label
     pop "R13"
     @lines.concat %W(@R13 D=M @#{label} D;JNE)
+  end
+
+  def write_goto label
+    @lines.concat %W(@#{label} 0;JMP)
   end
 
   def write_arithmetic cmd
