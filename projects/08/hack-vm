@@ -67,6 +67,8 @@ class Writer
       write_goto cmd[:arg1]
     when :function
       write_function cmd[:arg1], cmd[:arg2].to_i
+    when :return
+      write_return
     else
       raise "unknown command #{cmd}"
     end
@@ -98,6 +100,24 @@ class Writer
     num_args.times do
       write_push_pop({:cmd_type => :push, :arg1 => "constant", :arg2 => "0"})
     end
+  end
+
+  def write_return
+    raise "trying to return outside of a function" unless @current_function
+    pop "R13" #save return value in R13
+    @lines.concat %W(@LCL D=M @SP M=D) # set sp to lcl
+
+    pop "THAT"
+    pop "THIS"
+    pop "ARG"
+    pop "LCL"
+    pop "R14"
+
+    push "R13" #push return address
+
+    @lines.concat %W(@R14 A=M 0;JMP) # jump to return address
+
+    @current_function = nil
   end
 
   def write_if_goto label
