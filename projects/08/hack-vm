@@ -3,13 +3,19 @@
 require 'rake'
 require 'pry-byebug'
 
-
 abort "Usage: hack-vm <filename>" unless ARGV[0]
 
 filename = ARGV[0].to_s
 output = ARGV[1] || filename.ext(".asm")
+input_filenames = []
 
-abort "File not found at #{filename}" unless File.exists? filename
+if Dir.exists? filename
+  input_filenames = Dir[File.join(File.expand_path(filename), "*.vm")]
+  output = File.join(filename,filename.split("/").last + ".asm")
+else
+  abort "File not found at #{filename}" unless File.exists? filename
+  input_filenames = [filename]
+end
 
 COMMAND_TYPES = %i[arithmetic push pop label goto if-goto function return call]
 ARITHMETIC =  %w[add sub neg eq gt lt and or not]
@@ -27,7 +33,6 @@ end
 
 
 def parse filename
-
   lines = File.open(filename).read.lines.to_a
   #remove comments and leading / trailing whitespace
   lines.map! {|l| l.strip }
@@ -45,9 +50,11 @@ end
 class Writer
 
   def initialize
-    @lines=[]#%W(@256 D=A @SP M=D)
+    @lines=[] 
     @current_function=nil
     @label_count=0
+    
+    preamble
   end
 
   def current_filename fname
@@ -71,7 +78,7 @@ class Writer
     when :return
       write_return
     when :call
-      write call cmd[:arg1], cmd[:arg2].to_i
+      write_call cmd[:arg1], cmd[:arg2].to_i
     else
       raise "unknown command #{cmd}"
     end
@@ -87,6 +94,10 @@ class Writer
   end
 
   private 
+  def preamble
+    @lines.concat  %W(@256 D=A @SP M=D) #initalize sp to 256
+    write_call "Sys.init", 0
+  end
 
   def static position
     "@#{File.basename(@fname,".*").upcase}.#{position}"
@@ -94,11 +105,17 @@ class Writer
 
   def get_label id="lbl"
     @label_count += 1
-    @current_function.nil? ? id + "_" + @label_count.to_s : @current_function+"$"+id + "_" + @label_count.to_s
+    @current_function.nil? ? id  : @current_function+"$"+id 
+  end
+
+  def get_unique_label
+    @label_count += 1
+    id = "_" + @label_count.to_s
+    @current_function.nil? ? id  : @current_function+"$"+id 
   end
 
   def write_call function, args
-    return_label = get_label(function+"_ret")
+    return_label = get_label(function+"_ret_"+@label_count.to_s)
 
     push "#{return_label}"
     push "LCL"
@@ -109,7 +126,7 @@ class Writer
     @lines.concat %W(@SP D=M @#{args} D=D-A @5 D=D-A @ARG M=D) #set arg for new frame
     @lines.concat %W(@SP D=M @LCL M=D) #set lcl for new frame
 
-    write_goto function #do the jump
+    @lines.concat %W(@#{function} 0;JMP) #unscoped label for call invocation
 
     @lines << "(#{return_label})" #return point after invokation
   end
@@ -117,14 +134,15 @@ class Writer
   def write_function name, num_args
     raise "trying to start a new function #{name} whilst inside current function #{@current_function}" unless @current_function.nil?
     @current_function = name
-    write_label name
+    #TODO: assert that function name is suitable for the current filename
+    
+    @lines << "(#{name})"
     num_args.times do
       write_push_pop({:cmd_type => :push, :arg1 => "constant", :arg2 => "0"})
     end
   end
 
   def write_return
-    raise "trying to return outside of a function" unless @current_function
     pop "R13" #save return value in R13
     @lines.concat %W(@LCL D=M @SP M=D) # set sp to lcl
     @lines.concat %W(@ARG D=M @R15 M=D) # set arg to r15
@@ -146,11 +164,11 @@ class Writer
 
   def write_if_goto label
     pop "R13"
-    @lines.concat %W(@R13 D=M @#{label} D;JNE)
+    @lines.concat %W(@R13 D=M @#{get_label(label)} D;JNE)
   end
 
   def write_goto label
-    @lines.concat %W(@#{label} 0;JMP)
+    @lines.concat %W(@#{get_label(label)} 0;JMP)
   end
 
   def write_arithmetic cmd
@@ -184,8 +202,8 @@ class Writer
     when "or"
       @lines.concat %W(D=D|M @R15 M=D)
     when "eq","gt","lt"
-      true_lbl = get_label
-      end_lbl = get_label
+      true_lbl = get_unique_label
+      end_lbl = get_unique_label
 
       @lines.concat [
         "D=D-M",
@@ -284,10 +302,12 @@ class Writer
 end
 
 writer = Writer.new
-cmds = parse filename
-writer.current_filename filename
+input_filenames.each do |in_file|
+  cmds = parse in_file
+  writer.current_filename in_file
 
-cmds.each {|c| writer.write_cmd c }
+  cmds.each {|c| writer.write_cmd(c) }
+end
 
 writer.finish output
 
