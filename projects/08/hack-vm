@@ -47,6 +47,7 @@ class Writer
   def initialize
     @lines=[]
     @current_function=nil
+    @label_count=0
   end
 
   def current_filename fname
@@ -69,13 +70,15 @@ class Writer
       write_function cmd[:arg1], cmd[:arg2].to_i
     when :return
       write_return
+    when :call
+      write call cmd[:arg1], cmd[:arg2].to_i
     else
       raise "unknown command #{cmd}"
     end
   end
 
   def write_label name
-    @lines << "(#{label_id(name)})"
+    @lines << "(#{get_label(name)})"
   end
 
   def finish name
@@ -89,8 +92,26 @@ class Writer
     "@#{File.basename(@fname,".*").upcase}.#{position}"
   end
 
-  def label_id id
-    @current_function.nil? ? id : @current_function+"$"+id
+  def get_label id="lbl"
+    @label_count += 1
+    @current_function.nil? ? id + "_" + @label_count.to_s : @current_function+"$"+id + "_" + @label_count.to_s
+  end
+
+  def write_call function, args
+    return_label = get_label(function+"_ret")
+
+    push "#{return_label}"
+    push "LCL"
+    push "ARG"
+    push "THIS"
+    push "THAT"
+
+    @lines.concat %W(@SP D=M @#{args} D=D-A @5 D=D-A @ARG M=D) #set arg for new frame
+    @lines.concat %W(@SP D=M @LCL M=D) #set lcl for new frame
+
+    write_goto function #do the jump
+
+    @lines << "(#{return_label})" #return point after invokation
   end
 
   def write_function name, num_args
@@ -111,9 +132,9 @@ class Writer
     pop "THIS"
     pop "ARG"
     pop "LCL"
-    pop "R14"
+    pop "R14" #return address
 
-    push "R13" #push return address
+    push "R13" #push return value
 
     @lines.concat %W(@R14 A=M 0;JMP) # jump to return address
 
@@ -160,8 +181,8 @@ class Writer
     when "or"
       @lines.concat %W(D=D|M @R15 M=D)
     when "eq","gt","lt"
-      true_lbl = label_id
-      end_lbl = label_id
+      true_lbl = get_label
+      end_lbl = get_label
 
       @lines.concat [
         "D=D-M",
