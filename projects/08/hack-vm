@@ -37,7 +37,7 @@ def parse filename
   lines.map do |l|
     cmd_type = command_for_line l
 
-    cmd, arg1, arg2 = l.scan(/([\w-]+)\s?(\w+)?\s?(\w+)?/).flatten
+    cmd, arg1, arg2 = l.scan(/([\w.-]+)\s?([\w\.]+)?\s?(\w+)?/).flatten
     {cmd: cmd, cmd_type: cmd_type, arg1: arg1, arg2:arg2}
   end
 end
@@ -46,7 +46,7 @@ class Writer
 
   def initialize
     @lines=[]
-    @label_count=0
+    @current_function=nil
   end
 
   def current_filename fname
@@ -65,6 +65,8 @@ class Writer
       write_if_goto cmd[:arg1]
     when :goto
       write_goto cmd[:arg1]
+    when :function
+      write_function cmd[:arg1], cmd[:arg2].to_i
     else
       raise "unknown command #{cmd}"
     end
@@ -85,9 +87,17 @@ class Writer
     "@#{File.basename(@fname,".*").upcase}.#{position}"
   end
 
-  def label_id id=nil
-    @label_count+=1
-    id || "label_#{@label_count}"
+  def label_id id
+    @current_function.nil? ? id : @current_function+"$"+id
+  end
+
+  def write_function name, num_args
+    raise "trying to start a new function #{name} whilst inside current function #{@current_function}" unless @current_function.nil?
+    @current_function = name
+    write_label name
+    num_args.times do
+      write_push_pop({:cmd_type => :push, :arg1 => "constant", :arg2 => "0"})
+    end
   end
 
   def write_if_goto label
