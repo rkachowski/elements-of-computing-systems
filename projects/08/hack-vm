@@ -45,7 +45,7 @@ end
 class Writer
 
   def initialize
-    @lines=[]
+    @lines=[]#%W(@256 D=A @SP M=D)
     @current_function=nil
     @label_count=0
   end
@@ -127,12 +127,15 @@ class Writer
     raise "trying to return outside of a function" unless @current_function
     pop "R13" #save return value in R13
     @lines.concat %W(@LCL D=M @SP M=D) # set sp to lcl
+    @lines.concat %W(@ARG D=M @R15 M=D) # set arg to r15
 
     pop "THAT"
     pop "THIS"
     pop "ARG"
     pop "LCL"
     pop "R14" #return address
+
+    @lines.concat %W(@R15 D=M @SP M=D) # set sp to previous arg
 
     push "R13" #push return value
 
