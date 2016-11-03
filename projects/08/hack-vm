@@ -42,7 +42,7 @@ def parse filename
   lines.map do |l|
     cmd_type = command_for_line l
 
-    cmd, arg1, arg2 = l.scan(/([\w.-]+)\s?([\w\.]+)?\s?(\w+)?/).flatten
+    cmd, arg1, arg2 = l.scan(/([\w.-]+)\s?([\w\.]+)?\s?([\-\w]+)?/).flatten
     {cmd: cmd, cmd_type: cmd_type, arg1: arg1, arg2:arg2}
   end
 end
@@ -117,7 +117,11 @@ class Writer
   def write_call function, args
     return_label = get_label(function+"_ret_"+@label_count.to_s)
 
-    push "#{return_label}"
+
+    #push return address
+    @lines.concat %W(@#{return_label} D=A @R13 M=D)
+    push "R13"
+
     push "LCL"
     push "ARG"
     push "THIS"
@@ -132,7 +136,7 @@ class Writer
   end
 
   def write_function name, num_args
-    raise "trying to start a new function #{name} whilst inside current function #{@current_function}" unless @current_function.nil?
+    #raise "trying to start a new function #{name} whilst inside current function #{@current_function}" unless @current_function.nil?
     @current_function = name
     #TODO: assert that function name is suitable for the current filename
     
@@ -144,6 +148,7 @@ class Writer
 
   def write_return
     pop "R13" #save return value in R13
+
     @lines.concat %W(@LCL D=M @SP M=D) # set sp to lcl
     @lines.concat %W(@ARG D=M @R15 M=D) # set arg to r15
 
@@ -158,13 +163,11 @@ class Writer
     push "R13" #push return value
 
     @lines.concat %W(@R14 A=M 0;JMP) # jump to return address
-
-    @current_function = nil
   end
 
   def write_if_goto label
     pop "R13"
-    @lines.concat %W(@R13 D=M @#{get_label(label)} D;JNE)
+    @lines.concat %W(@R13 D=M+1 @#{get_label(label)} D;JEQ)
   end
 
   def write_goto label
@@ -252,7 +255,11 @@ class Writer
         @R13
         M=D)
       when 'constant'
-        @lines.concat %W(@#{position} D=A @R13 M=D)
+        if position.to_i < 0
+          @lines.concat %W(@#{position.to_i.abs} D=-A @R13 M=D)
+        else
+          @lines.concat %W(@#{position} D=A @R13 M=D)
+        end
       else
         raise "unsupported segment! - #{segment}"
       end
