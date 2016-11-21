@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby,
+#!/usr/bin/env ruby
 require 'nokogiri'
 require 'thor'
 require 'pry-byebug'
@@ -6,11 +6,18 @@ require 'pry-byebug'
 
 class Jcc < Thor
   option :tokenize_only, type: :boolean, default: false
+  option :token_output, type: :string
   desc "compile SOURCE", "compiles file"
   def compile(source)
     raise "File not found" unless File.exists?(source) or Dir.exists?(source)
 
+    t = Tokeniser.new source
+    t.tokenize
 
+    if options[:tokenize_only]
+      filename = options[:token_output] || "#{source}.xml"
+      File.open(filename,"w") {|f| f << t.to_xml }
+    end
   end
   default_task :compile
 end
@@ -84,7 +91,20 @@ class Tokeniser
 
     tokens.flatten!
     tokens.delete_if {|t| t.keys == [""]}
-    tokens
+    @tokens = tokens
+    @tokens
+  end
+
+  def to_xml
+    b = Nokogiri::XML::Builder.new do |xml|
+      xml.tokens {
+       @tokens.each do |t|
+         xml.send(t.values.first, " #{t.keys.first.gsub('"', '')} ")
+       end
+      }
+    end
+
+    b.to_xml
   end
 
   def token str
@@ -101,6 +121,7 @@ class Tokeniser
     tokens = []
 
     last_token = str.chars.inject("") do |s,c|
+      #only token that surrounds others is "" so we treat this differently
       if s.start_with? '"' and not (s.length > 1 and s.end_with?('"'))
         next s+c
       end
