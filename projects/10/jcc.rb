@@ -18,7 +18,6 @@ class Jcc < Thor
 
     t = Tokeniser.new source
     t.tokenize
-    binding.pry
 
     if options[:tokenize_only]
       filename = options[:token_output] || "#{source}Tok.xml"
@@ -89,11 +88,19 @@ class Tokeniser
 
       start_index,end_index =lines.index(comment_start),lines.index(comment_end)
 
-      raise "degenerate state! starting at line #{lines.index(comment_start)}" if start_index == end_index
+      if start_index == end_index
+        lines[start_index] = lines[start_index].gsub(/\/\*.*\*\//, "")
+        next
+      end
 
+      #remove everything after block comment start
       lines[start_index] = comment_start.split('/*').first
+      #remove everything before block comment end
       lines[end_index] = comment_end.split('*/').last
 
+      next if start_index+1 == end_index #there's nothing between the lines
+
+      #remove lines between block comment start and end
       lines.slice!( (start_index+1)...end_index)
     end
   end
