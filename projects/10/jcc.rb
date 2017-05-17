@@ -11,11 +11,16 @@ class Jcc < Thor
   def compile(source)
     raise "File not found" unless File.exists?(source) or Dir.exists?(source)
 
+    if Dir.exists?(source)
+      Dir[File.join(source, '*.jack')].each { |jack_file| compile jack_file }
+      return
+    end
+
     t = Tokeniser.new source
     t.tokenize
 
     if options[:tokenize_only]
-      filename = options[:token_output] || "#{source}.xml"
+      filename = options[:token_output] || "#{source}Tok.xml"
       File.open(filename,"w") {|f| f << t.to_xml }
     end
   end
@@ -67,6 +72,7 @@ class Tokeniser
       '=' => :symbol,
       '~' => :symbol
   }
+
   def initialize source
     @source = source
   end
@@ -78,7 +84,7 @@ class Tokeniser
     lines.delete_if{ |l| l.match(/^\s*\/\//)}
     lines.map! { |l| l.sub /\/\*\*.*\*\//, '' }
 
-    tokens = lines#.inject([]){|arr,l| arr.concat(l.split(" ")) }
+    tokens = lines
     tokens.map! do |t|
       token = token(t)
       if token
@@ -104,7 +110,7 @@ class Tokeniser
       }
     end
 
-    b.to_xml
+    b.doc.root.to_xml
   end
 
   def token str
