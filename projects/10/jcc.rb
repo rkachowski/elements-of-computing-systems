@@ -18,6 +18,7 @@ class Jcc < Thor
 
     t = Tokeniser.new source
     t.tokenize
+    binding.pry
 
     if options[:tokenize_only]
       filename = options[:token_output] || "#{source}Tok.xml"
@@ -77,12 +78,30 @@ class Tokeniser
     @source = source
   end
 
+  def remove_comments lines
+    lines.map! { |l| l.split('//').first }
+
+    while lines.any?{ |l| l.index('/*') } do
+      comment_start = lines.find{ |l| l.index('/*')}
+      comment_end = lines.find {|l| l.index('*/')}
+
+      raise "Unmatched comment found! starting at line #{lines.index(comment_start)}" unless comment_end
+
+      start_index,end_index =lines.index(comment_start),lines.index(comment_end)
+
+      raise "degenerate state! starting at line #{lines.index(comment_start)}" if start_index == end_index
+
+      lines[start_index] = comment_start.split('/*').first
+      lines[end_index] = comment_end.split('*/').last
+
+      lines.slice!( (start_index+1)...end_index)
+    end
+  end
+
   def tokenize
     lines = File.open(@source).each_line.to_a
 
-    #remove comments
-    lines.delete_if{ |l| l.match(/^\s*\/\//)}
-    lines.map! { |l| l.sub /\/\*\*.*\*\//, '' }
+    remove_comments lines
 
     tokens = lines
     tokens.map! do |t|
