@@ -17,14 +17,17 @@ class Jcc < Thor
     end
 
     t = Tokeniser.new source
-    p = Parser.new t
-    p.compile
-
 
     if options[:tokenize_only]
       filename = options[:token_output] || "#{source}Tok.xml"
       File.open(filename,"w") {|f| f << t.to_xml }
+      return
     end
+
+    p = Parser.new t
+    p.compile
+    binding.pry
+
   end
   default_task :compile
 end
@@ -55,10 +58,15 @@ class Parser
     validate_and_advance(klass,:symbol, "}")
   end
 
-  def validate_and_advance(scope, type, value=nil)
+  def validate_and_advance(scope, type, value=nil,throw_error=true)
       result, error = validate type, value
-      raise error unless result == :ok
+
+      if result != :ok
+        if throw_error then raise error else return [result, error] end
+      end
+
       advance scope
+      [:ok]
   end
 
   def find_valid *args
@@ -71,7 +79,8 @@ class Parser
   def zeroOrMany step
     result = :ok
     while result == :ok
-      result = step.call
+      result, *_ = step.call
+      puts result
     end
   end
 
@@ -81,27 +90,48 @@ class Parser
     result
   end
 
-  def compile_class_var_dec scope
-    valid = find_valid [:keyword, 'static'], [:keyword, 'field']
+  def compile_var_dec scope
+    valid = find_valid [:keyword, 'var']
     return unless valid and valid[0] == :ok
+
     varDec = nest scope, :varDec
     advance varDec
 
-    valid = validate_type
+    find_valid [:keyword, 'int'], [:keyword, 'char'],[:keyword, 'boolean'],[:identifier]
     advance varDec
 
     #varname
     validate_and_advance(varDec, :identifier)
 
-    zeroOrMany -> {validate_and_advance(varDec, :symbol, ','); validate_and_advance(varDec, :identifier)}
+    zeroOrMany -> {
+      validate_and_advance(varDec, :symbol, ',',false) 
+      validate_and_advance(varDec, :identifier, nil,false)
+    }
 
     validate_and_advance(varDec, :symbol, ';')
 
     [:ok]
   end
 
-  def validate_type *args
-    find_valid [:keyword, 'int'], [:keyword, 'char'],[:keyword, 'boolean'],[:identifier],*args
+  def compile_class_var_dec scope
+    valid = find_valid [:keyword, 'static'], [:keyword, 'field']
+    return unless valid and valid[0] == :ok
+    varDec = nest scope, :classVarDec
+    advance varDec
+
+    find_valid [:keyword, 'int'], [:keyword, 'char'],[:keyword, 'boolean'],[:identifier]
+    advance varDec
+
+    validate_and_advance(varDec, :identifier)
+
+    zeroOrMany -> do 
+      validate_and_advance(varDec, :symbol, ',',false)
+      validate_and_advance(varDec, :identifier,nil, false)
+    end
+
+    validate_and_advance(varDec, :symbol, ';')
+
+    [:ok]
   end
 
   def compile_subroutine_dec scope
@@ -110,27 +140,117 @@ class Parser
     subroutineDec  = nest scope, :subroutineDec
     advance subroutineDec
 
-    valid = validate_type [:keyword, 'void']
+    find_valid [:keyword, 'int'], [:keyword, 'char'],[:keyword, 'boolean'],[:identifier],[:keyword, 'void']
     advance subroutineDec
 
     validate_and_advance(subroutineDec, :identifier) #subroutine name
     validate_and_advance(subroutineDec, :symbol, "(")
-
     compile_parameter_list subroutineDec
-
     validate_and_advance(subroutineDec, :symbol, ")")
 
     compile_subroutine_body subroutineDec
-    binding.pry
     [:ok]
   end
 
   def compile_parameter_list scope
-    nest scope, :parameterList
+    valid = find_valid [:keyword, 'int'], [:keyword, 'char'],[:keyword, 'boolean'],[:identifier]
+    return unless valid[0] == :ok
+    parameterList = nest scope, :parameterList
+    advance parameterList
+
+    validate_and_advance(parameterList, :identifier)
+
+    zeroOrMany -> do
+      validate_and_advance(parameterList, :symbol, ',')
+      find_valid [:keyword, 'int'], [:keyword, 'char'],[:keyword, 'boolean'],[:identifier]
+      advance parameterList
+      validate_and_advance(parameterList, :identifier)
+    end
+
+    [:ok]
   end
 
   def compile_subroutine_body scope
-    nest scope, :subroutineBody
+    valid = find_valid [:symbol, '{']
+    return unless valid[0] == :ok
+    body = nest scope, :subroutineBody
+    advance body
+
+    zeroOrMany -> { compile_var_dec body }
+
+  
+    compile_statements body
+
+    validate_and_advance body, :symbol, '}'
+
+    [:ok]
+  end
+
+  def compile_statements scope
+    statements = nest scope, :statements
+
+    zeroOrMany -> do
+     compile_statement statements
+    end
+
+    [:ok]
+  end
+
+  def compile_statement scope
+
+    case @input.current_token.keys.first
+    when 'let'
+      compile_let_statement scope
+    when 'if'
+      compile_if_statement scope
+    when 'while'
+      compile_while_statement scope
+    when 'do'
+      compile_do_statement scope
+    when 'return'
+      compile_return_statement scope
+    else 
+      return [:unknown_statement, "couldn't identify statement"]
+    end
+
+    [:ok]
+  end
+
+  def compile_let_statement scope
+    let = nest scope, :letStatement
+    advance let
+    
+  end
+
+  def compile_if_statement scope
+    if_s = nest scope, :ifStatement
+    advance if_s
+    
+  end
+  def compile_while_statement scope
+    while_s = nest scope, :whileStatement
+    advance while_s
+    
+  end
+
+  def compile_do_statement scope
+    do_s = nest scope, :doStatement
+    advance do_s
+    
+  end
+
+  def compile_return_statement scope
+    return_s = nest scope, :returnStatement
+    advance return_s
+
+    zeroOrMany -> { compile_expression return_s }
+
+    validate_and_advance(return_s, :symbol, ';')
+    
+  end
+
+  def compile_expression scope
+    exp = nest scope, :expression
   end
 
   def advance scope
